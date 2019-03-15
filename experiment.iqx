@@ -1,0 +1,131 @@
+﻿<item instruction>
+/1="屏幕中央会呈现10以内的加减法，请快速计算出结果，并按空格键进入下一题，尽快计算，看你一分钟能够计算多少题？"
+</item>
+
+.................
+定义刺激
+.................
+<text instructiontxt>
+/hjustify = left
+/select = sequence
+/items = instruction
+/size = (640,100)
+/fontstyle = ("宋体",24pt)
+/txbgcolor = (transparent)
+/txcolor = green
+</text>
+
+<text anykeytxt>
+/items = ("按任意键开始实验")
+/vposition = 70pct
+/fontstyle = ("Arial",24pt)
+/txcolor = red
+/txbgcolor = (transparent)
+</text>
+
+<item first>
+/1="2" 
+</item>
+
+<item second>
+/1="2"
+</item>
+
+<text mathexpression>
+/items = first
+/fontstyle = ("Arial",10%)
+/txbgcolor = black
+/txcolor=white
+</text>
+
+<values>
+/firstnum=0
+/secondnum=0
+/sign=1
+/sum=10
+/subtract=0
+</values>
+...................
+定义试次
+...................
+<expressions>
+/evaluatefirst=if((values.firstnum+values.secondnum*values.sign)<=values.sum) item.first.1=trim(format("%2.0f",values.firstnum)," ")
+/evaluatesecond=if((values.firstnum+values.secondnum*values.sign)>=values.subtract) item.second.1=trim(format("%2.0f",values.secondnum)," ")
+/generaterandom=ceil(rand(0,values.sum))
+/generatesign=if(rand(0,1)>0.5) values.sign=1 else values.sign=-1
+/outofrange=((values.firstnum+values.secondnum*values.sign)>values.sum)||((values.firstnum+values.secondnum*values.sign)<values.subtract)
+/gme=if(values.sign==1) item.first.1=concat(concat(item.first.1,concat("+",item.second.1)),"=") else item.first.1=concat(concat(item.first.1,concat("-",item.second.1)),"=") 
+</expressions>
+
+<trial first>
+/ontrialbegin = [values.firstnum=expressions.generaterandom]
+/ontrialbegin = [values.secondnum=expressions.generaterandom]
+/ontrialbegin = [expressions.generatesign]
+/ontrialbegin = [expressions.evaluatefirst]
+/ontrialbegin = [expressions.evaluatesecond]
+/trialduration = 10
+/branch = [if(expressions.outofrange) trial.second]
+/recorddata = false
+</trial>
+
+<trial second>
+/ontrialbegin = [values.firstnum=expressions.generaterandom]
+/ontrialbegin = [values.secondnum=expressions.generaterandom]
+/ontrialbegin = [expressions.generatesign]
+/ontrialbegin = [expressions.evaluatefirst]
+/ontrialbegin = [expressions.evaluatesecond]
+/trialduration = 10
+/branch = [if(expressions.outofrange) trial.first]
+/recorddata = false
+</trial>
+
+<trial instruction>
+/validresponse = (anyresponse)
+/stimulusframes = [1=instructiontxt,anykeytxt]
+/recorddata = false
+</trial>
+
+<trial mathexpression>
+/ontrialbegin = [expressions.gme]
+/stimulustimes = [1=mathexpression]
+/validresponse = (" ")
+</trial>
+...............
+定义区组
+...............
+<block mentalcal>
+/screencolor = black
+/trials = [1-800=sequence(first,mathexpression)]
+/stop = [block.mentalcal.sumlatency>60000]
+</block>
+<block instruction>
+/screencolor = black
+/trials = [1=instruction]
+</block>
+..............
+定义实验
+..............
+<page summary>
+	你目前共做了<% trial.mathexpression.count %>道数学题！
+</page>
+<instruct>
+/fontstyle = ("宋体",5%)
+/finishlabel = "按回车键结束"
+</instruct>
+
+<expt mentalcal>
+/blocks = [1=instruction,mentalcal]
+/postinstructions = (summary)
+</expt>
+
+
+
+
+
+
+
+
+
+
+
+
